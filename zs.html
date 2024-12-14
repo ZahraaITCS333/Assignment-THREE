@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UOB Student Nationality Data</title>
+    <link rel="stylesheet" href="https://unpkg.com/picocss/dist/pico.min.css">
+    <style>
+        body { line-height: 1.5; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            line-height: 1.5;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 3px solid #91e3ee;  
+            font-size: 12px;
+        }
+
+        th {
+            background-color: pink;
+            font-weight: bold;
+        }
+        td {
+            background-color: #dcfa97;
+            font-weight: bold;
+        }
+        h2 {
+            color: #a4d3f3;
+            font-weight: bold;
+        }
+        body {
+            background-color: #fdfb90;
+        }
+
+        @media (max-width: 600px) {
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1> <span id="date"></span></h1>
+<h2>UOB Student Enrollment by Nationality <span id="current-date"></span></h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Year</th>
+            <th>Semester</th>
+            <th>The Programs</th>
+            <th>Nationality</th>
+            <th>Colleges</th>
+            <th>Number of Students</th>
+        </tr>
+    </thead>
+    <tbody id="data-table">
+    </tbody>
+</table>
+
+<script>
+     
+    const currentDate = new Date();
+    const formattedDate = currentDate.toLocaleDateString('en-US');
+    document.getElementById('current-date').textContent = formattedDate;
+
+    
+    const apiURL = "https://data.gov.bh/api/explore/v2.1/catalog/datasets/01-statistics-of-students-nationalities_updated/records?where=colleges%20like%20%22IT%22%20AND%20the_programs%20like%20%22bachelor%22&limit=100";
+
+    
+    async function fetchAndDisplayData() {
+        try {
+            const response = await fetch(apiURL);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const jsonData = await response.json();
+
+            if (jsonData && jsonData.results && Array.isArray(jsonData.results)) {
+                const tableBody = document.getElementById("data-table");
+
+                jsonData.results.forEach(record => {
+                    if (record.year && record.semester && record.the_programs && record.nationality && record.colleges && record.number_of_students) {
+                        const row = document.createElement("tr");
+
+                        row.innerHTML = `
+                            <td>${record.year}</td>
+                            <td>${record.semester}</td>
+                            <td>${record.the_programs}</td>
+                            <td>${record.nationality}</td>
+                            <td>${record.colleges}</td>
+                            <td>${record.number_of_students}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    }
+                });
+            } else {
+                const tableBody = document.getElementById("data-table");
+                tableBody.innerHTML = "<tr><td colspan='6'>No data available or the structure is different than expected.</td></tr>";
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            const tableBody = document.getElementById("data-table");
+            tableBody.innerHTML = "<tr><td colspan='6'>An error occurred while fetching data.</td></tr>";
+        }
+    }
+
+     
+    fetchAndDisplayData();
+</script>
+
+</body>
+</html>
